@@ -1,7 +1,7 @@
 const { Telegraf } = require('telegraf');
 
 // ВСТАВЬТЕ СЮДА ВАШ ТОКЕН (в кавычках)
-const bot = new Telegraf('9286864051:AAEETcLVRh8gxYoYwalKhPDYErA-698Q64I');
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 // Хранилище питомцев для каждого пользователя
 // В реальной игре нужна база данных, но для старта хватит и памяти
