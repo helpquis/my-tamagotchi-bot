@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Telegraf } = require('telegraf');
 
 // ВСТАВЬТЕ СЮДА ВАШ ТОКЕН (в кавычках)
