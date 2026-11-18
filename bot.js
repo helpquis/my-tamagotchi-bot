@@ -109,9 +109,38 @@ bot.command('play', (ctx) => {
 });
 
 // Запуск бота
-bot.launch();
-console.log('Бот запущен!');
+// bot.launch();
+// console.log('Бот запущен!');
 
 // Остановка при закрытии
+// process.once('SIGINT', () => bot.stop('SIGINT'));
+// process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+// Удалите или закомментируйте исходный bot.launch() и код http-сервера
+// bot.launch(); 
+
+// Замените на конфигурацию Webhook
+// Render автоматически предоставит переменную окружения RENDER_EXTERNAL_URL (это ваш публичный адрес)
+// Если тестируете локально, можно временно не указывать или использовать инструмент типа ngrok
+const webhookDomain = process.env.RENDER_EXTERNAL_URL; 
+
+if (webhookDomain) {
+    // Режим Webhook (работает на Render)
+    bot.launch({
+        webhook: {
+            domain: webhookDomain,
+            port: process.env.PORT || 3000, // Render выделит порт
+        }
+    }).then(() => {
+        console.log(`Бот запущен в режиме Webhook: ${webhookDomain}`);
+    });
+} else {
+    // Режим Long Polling (для локальной разработки)
+    bot.launch().then(() => {
+        console.log('Бот запущен в режиме Long Polling (локальная разработка)');
+    });
+}
+
+// Код корректного завершения процесса оставьте без изменений
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
