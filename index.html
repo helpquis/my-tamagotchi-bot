@@ -7,30 +7,136 @@
     <style>
         body {
             font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 20px;
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-        }
-        .container {
             text-align: center;
+        }
+        .pet {
+            font-size: 80px;
+            margin: 20px 0;
+        }
+        .stat {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        .buttons {
+            margin-top: 30px;
+        }
+        button {
+            font-size: 18px;
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            cursor: pointer;
+        }
+        button:active {
+            opacity: 0.7;
+        }
+        .reset {
+            background-color: #ff4d4d;
+            margin-top: 40px;
+            font-size: 14px;
+            padding: 8px 16px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Привет, это будущий Тамагочи! 🐣</h1>
-        <p>Здесь скоро появится твой питомец.</p>
-        <p>А пока это просто тестовая страница.</p>
+    <h1>Твой питомец</h1>
+    <div class="pet" id="petEmoji">🐣</div>
+    <div class="stat">🍖 Сытость: <span id="hunger">100</span></div>
+    <div class="stat">😊 Настроение: <span id="happiness">100</span></div>
+
+    <div class="buttons">
+        <button onclick="feedPet()">Покормить</button>
+        <button onclick="playPet()">Поиграть</button>
     </div>
+
+    <button class="reset" onclick="resetPet()">Сбросить питомца</button>
+
     <script>
-        // Сообщаем Telegram, что страница загрузилась
-        window.Telegram.WebApp.ready();
-        // Разворачиваем на весь экран
-        window.Telegram.WebApp.expand();
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Загружаем состояние из localStorage или создаём новое
+        let pet = JSON.parse(localStorage.getItem('tamagotchiPet'));
+
+        if (!pet) {
+            pet = {
+                hunger: 100,
+                happiness: 100,
+                lastUpdated: Date.now()
+            };
+        }
+
+        // Функция «старения»: чем больше времени прошло, тем голоднее питомец
+        function updatePet() {
+            const now = Date.now();
+            const hoursPassed = (now - pet.lastUpdated) / (1000 * 60 * 60);
+
+            if (hoursPassed > 0) {
+                // Каждый час сытость и настроение падают на 5
+                pet.hunger = Math.max(0, pet.hunger - Math.floor(hoursPassed * 5));
+                pet.happiness = Math.max(0, pet.happiness - Math.floor(hoursPassed * 5));
+                pet.lastUpdated = now;
+            }
+        }
+
+        function savePet() {
+            localStorage.setItem('tamagotchiPet', JSON.stringify(pet));
+        }
+
+        function updateUI() {
+            document.getElementById('hunger').textContent = pet.hunger;
+            document.getElementById('happiness').textContent = pet.happiness;
+
+            const petEmoji = document.getElementById('petEmoji');
+            if (pet.hunger < 30 || pet.happiness < 30) {
+                petEmoji.textContent = '😿';
+            } else if (pet.hunger > 80 && pet.happiness > 80) {
+                petEmoji.textContent = '😸';
+            } else {
+                petEmoji.textContent = '🐣';
+            }
+        }
+
+        function feedPet() {
+            updatePet();
+            pet.hunger = Math.min(100, pet.hunger + 20);
+            pet.lastUpdated = Date.now();
+            savePet();
+            updateUI();
+        }
+
+        function playPet() {
+            updatePet();
+            pet.happiness = Math.min(100, pet.happiness + 15);
+            pet.lastUpdated = Date.now();
+            savePet();
+            updateUI();
+        }
+
+        function resetPet() {
+            if (confirm('Точно сбросить питомца? Прогресс исчезнет.')) {
+                pet = {
+                    hunger: 100,
+                    happiness: 100,
+                    lastUpdated: Date.now()
+                };
+                savePet();
+                updateUI();
+            }
+        }
+
+        // При открытии: обновляем состояние (учитываем прошедшее время) и рисуем
+        updatePet();
+        savePet();
+        updateUI();
     </script>
 </body>
 </html>
